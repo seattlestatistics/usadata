@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Introduction</title>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h3>Introduction</h3>
+
+<p>This is a light-hearted statistical analysis of America.  I say light-hearted, because I am not going to defend or justify my approach, or worry that my data or statistical procedures are inadequate or amateurish.  I just want to have fun.</p>
+
+<p>My focus is the fifty American states, and how their metrics on six measures relate to each other.  These metrics are as follows:</p>
+
+<ul>
+<li>Gun ownership (percentage, 2001)</li>
+<li>Religiousness (percent regarding themselves as strongly religious, 2013)</li>
+<li>Suicide rate (per 100,000, 2012)</li>
+<li>Obesity rate (percentage, 2013)</li>
+<li>Poverty rate (percentage, 2011-2013)</li>
+<li>Density (people per square mile, 2010)</li>
+</ul>
+
+<p>Some of this data might be suspect or dated.  Gunownership comes from 2001 figures, elicited by  the Behavioral Risk Factor Surveillance System (BRFSS).  The figure is based on interviews, so it is possible that people might not have been telling the truth.  The religiousness figures came from Gallup and the suicide figures were reported by the CDC in 2014.  The obesity figures are for 2013, and they come from the BRFSS.  Poverty represents the percent of people in poverty, using a three year average from 2011 to 2013.  The source is the US Census Bureau. The US Census Bureau is also the source of the population density, for the year 2010. The religiousness survey comes from Gallup, and was published at the beginning of 2013.</p>
+
+<p>It is a limited data set, covering each of the 50 US states.  I wanted to see what characteristics of the 50 states correlated with each other, and I wanted to look at the inter-relationship of factors such as obesity and religious conviction.  The techniques I will be using include correlation, regression, and factor and cluster analysis.  </p>
+
+<h3>Descriptives and transformations</h3>
+
+<p>Let&#39;s have a look at the raw data:</p>
+
+<pre><code>##      gunown         relig         suicide     
+##  Min.   : 6.7   Min.   :19.0   Min.   : 7.39  
+##  1st Qu.:31.4   1st Qu.:33.0   1st Qu.:12.36  
+##  Median :40.0   Median :38.2   Median :14.05  
+##  Mean   :37.6   Mean   :39.6   Mean   :14.60  
+##  3rd Qu.:44.0   3rd Qu.:45.3   3rd Qu.:17.07  
+##  Max.   :59.7   Max.   :58.0   Max.   :29.77
+</code></pre>
+
+<pre><code>##     obesity        poverty        density      
+##  Min.   :21.3   Min.   : 8.3   Min.   :   1.2  
+##  1st Qu.:26.4   1st Qu.:11.2   1st Qu.:  44.5  
+##  Median :29.4   Median :13.9   Median :  98.8  
+##  Mean   :28.7   Mean   :14.1   Mean   : 195.0  
+##  3rd Qu.:31.0   3rd Qu.:16.2   3rd Qu.: 209.5  
+##  Max.   :35.1   Max.   :21.4   Max.   :1195.5
+</code></pre>
+
+<p>When we look at this data, we have to remember that each state is being given the same weighting, without regard for population.  Sparsely populated Wyoming is having the same impact on the means as California and New York.  </p>
+
+<p>We can see that in terms of population density, there are wide disparities:
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAAnFBMVEX9/v0AAAAAADkAAGUAOTkAOWUAOY8AZo8AZrU5AAA5ADk5AGU5OWU5OY85ZrU5j485j9plAABlADllAGVlOQBlOY9lZgBlZjllZmVltf2POQCPOTmPOWWPZgCPjzmPtY+P27WP29qP2/2t2Oa1ZgC1Zjm1tWW124+1/rW1/tq1/v3ajzna/rXa/tra/v39tWX924/9/rX9/tr9/v1UaC4nAAAANHRSTlP///////////////////////////////////////////////////////////////////8AS1ciZQAAAAlwSFlzAAALEgAACxIB0t1+/AAADQ5JREFUeJztnYl64sgVRkfuCcFx3IHu6STQncy0QzZrAgK9/7tFtQnJIEsqGOPSf8739QKlW0Ic3VqElh9KkOSHW38AuA2IFwXxoiBeFMSLgnhREC8K4kVBvCiIFwXxoiBeFMSLgnhREC8K4kVBvCiIFwXxoiBeFMSLgnhREC8K4kVBvChTEL9fZobV68t8eC7LTccyxX1291QvdVibv02ts21jFfZFq4au6lJgQuKzRd+Cm66dIxQ0xLtK5801zF/U0FldCkxDvNG1y8zfuUv9yt2/MvtGlcyZ9fjhv+uq7PdG6i7sI7ndXQ6mwOZzQ3xxP9u6l2UZXtga5lV4VjUQB/cirDGsKBWmI94m4ManvrVivLhcbWjLzVK2XS/90vMO8Y189i+ca1/l/5z4sMawopt8AxFMSHyl1GSm9VYpWlSZOdvad8IyZtco7ueuDzc6qx1gv6z+OtPUW8khg+sXrQVddX6NYUWpMC3xO9fZm3bYOjWZnoWm3pk6rGe/Ll3XvbNduG0CTsW79qBuu/0Lt6Cp1L+o1xhWlAoTEr9pibeyqyQ0Xa/1ErTldz/fuy6+S3yja3/Z3Lskz7JT8WFFb73xsUxHvBnc1e3tUbyhMnQUH6Zu55p620PYLqLaHxqD+PqF+ZNXyxT3zaa+JqFx/jTE19M5N9SabWvxIT29+EpgJTe48oO7hrC8rqnOa0MjybO5S/JQXVhja/kEmJB4627jhtbtpt4mthupV+9swuw8TOeambqrDwj4QEd4YWuo1rHIXZtvq3OD+dby758piB9Jnk57/BuiJz5M5sSRE5/3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" alt="plot of chunk unnamed-chunk-2"/> </p>
+
+<p>The distribution has considerable positive skew, so I am going to transform the data.  Remembering that I am doing this for fun, I am going to use a triple square root transformation.  This means taking the square root of the densities, taking the square root of that, and then taking the square root of that.  So Alabama&#39;s population density of 94.4 is tranformed to 1.77.  The square root of 94.4 is 9.72, the square root of 9.72 is 3.12 and the square root of 3.12 is 1.77.  After the transformation, we get the following roughly bell-shaped histogram for density:</p>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-3"/> </p>
+
+<p>Further mention of density will refer to the tranformed figures:</p>
+
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    1.02    1.61    1.78    1.78    1.95    2.42
+</code></pre>
+
+<h3>Correlations</h3>
+
+<p>One can check the correlations of the six variables, the table of Pearson correlations being followed by the p values:</p>
+
+<pre><code>##          gunown relig suicide obesity poverty densityT
+## gunown     1.00  0.45    0.66    0.52    0.22    -0.79
+## relig      0.45  1.00    0.07    0.60    0.55    -0.14
+## suicide    0.66  0.07    1.00   -0.01    0.07    -0.82
+## obesity    0.52  0.60   -0.01    1.00    0.47    -0.10
+## poverty    0.22  0.55    0.07    0.47    1.00    -0.05
+## densityT  -0.79 -0.14   -0.82   -0.10   -0.05     1.00
+## 
+## n= 50 
+## 
+## 
+## P
+##          gunown relig  suicide obesity poverty densityT
+## gunown          0.0010 0.0000  0.0001  0.1318  0.0000  
+## relig    0.0010        0.6131  0.0000  0.0000  0.3172  
+## suicide  0.0000 0.6131         0.9525  0.6058  0.0000  
+## obesity  0.0001 0.0000 0.9525          0.0007  0.4716  
+## poverty  0.1318 0.0000 0.6058  0.0007          0.7150  
+## densityT 0.0000 0.3172 0.0000  0.4716  0.7150
+</code></pre>
+
+<p>We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  On the other hand, gun ownership, population density, and suicide are corrlelated with one another - although density&#39;s correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.</p>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-7"/> </p>
+
+<p>There is an outler, which is Wyoming.  Although Wyoming is a sparsely populated state, the suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.</p>
+
+<p>An interesting relationship is that between being obese and being very religious.  From a spiritual point of view this is not what one would expect.  Good Christians are supposed to have moderate lifestyles, and to regard the body as being a temple.  However the scatter plot tells another story:
+<img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-8"/> </p>
+
+<p>There is one notable outlier, and that is Utah.  Utah is one of the most relgious states in the Union, with 56% of the population being very religious, and an obesity rate of 24.1%.  Utah has a large Mormon population, and it may be that the psychosocial make-up of the Mormon community is fundamentally different than that of more mainstream Christian communities.</p>
+
+<h3>Regression</h3>
+
+<p>We then have to consider poverty.  It is possible that obesity is a surrogate for poverty, though the raw correlations suggest otherwise.  We can start by doing a linear regression, with obesity as the dependent variable and poverty as the predictor variable:</p>
+
+<pre><code>## 
+## Call:
+## lm(formula = obesity ~ poverty, data = usa)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -6.337 -2.190  0.786  2.152  4.873 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   21.820      1.938   11.26  4.5e-15 ***
+## poverty        0.489      0.134    3.64  0.00066 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.98 on 48 degrees of freedom
+## Multiple R-squared:  0.216,  Adjusted R-squared:   0.2 
+## F-statistic: 13.3 on 1 and 48 DF,  p-value: 0.000663
+</code></pre>
+
+<p>This doesn&#39;t tell us much more from what we already know about the poverty-obesity relationship.  The correlation between the two is 0.47, so R-squared is 0.216.  So there is a relation, but it only accounts for 21.6% of the shared variance.  So let&#39;s do another regression, this time adding religiousness:</p>
+
+<pre><code>## 
+## Call:
+## lm(formula = obesity ~ poverty + relig, data = usa)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -6.682 -2.078  0.449  2.008  5.339 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  18.8020     1.9243    9.77  6.7e-13 ***
+## poverty       0.2069     0.1432    1.45  0.15505    
+## relig         0.1766     0.0489    3.61  0.00074 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.66 on 47 degrees of freedom
+## Multiple R-squared:  0.387,  Adjusted R-squared:  0.36 
+## F-statistic: 14.8 on 2 and 47 DF,  p-value: 1.03e-05
+</code></pre>
+
+<p>When we introduce obesity, R-squared shoots up to 0.39, so 39% of the shared variance is now explained.  Furthermore, the statistical significance of poverty is now p=0.155, compared to obesity&#39;s p&lt;0.001.  This suggests that strong religious belief might have a relationship with obesity, and that poverty in itself may not play a central role.  </p>
+
+<p>One question we might want to ask is whether the variables so far mentioned have any influence on the suicide rate.  One problem of doing a regression might be collinearity - for example, gunownership and density have a very strong correlation.  So to deal with this issue, the five predictor variables that might predict suicide were reduced to their principle components.</p>
+
+<p>We first of all look at these components, suicide excluded, and set up a scree plot:</p>
+
+<pre><code>## Importance of components:
+##                        Comp.1 Comp.2 Comp.3  Comp.4  Comp.5
+## Standard deviation     1.6137 1.1678 0.7454 0.61951 0.30452
+## Proportion of Variance 0.5208 0.2728 0.1111 0.07676 0.01855
+## Cumulative Proportion  0.5208 0.7936 0.9047 0.98145 1.00000
+</code></pre>
+
+<p><img src="data:image/png;base64,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" alt="plot of chunk unnamed-chunk-11"/> </p>
+
+<p>It would seem that the optimum number of principle components is 2, so let&#39;s set them up:</p>
+
+<pre><code>##              PC1     PC2
+## gunown    0.8291 -0.5029
+## relig     0.7860  0.3578
+## obesity   0.7797  0.3107
+## poverty   0.6232  0.5209
+## densityT -0.5499  0.7842
+</code></pre>
+
+<p>We can now enter them into a regression equation, to look at their relationship to suicide:</p>
+
+<pre><code>## 
+## Call:
+## lm(formula = suicide ~ pc1 + pc2, data = usa)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.696 -1.314 -0.233  1.420  8.096 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   14.596      0.376   38.82  &lt; 2e-16 ***
+## pc1            1.776      0.380    4.68  2.5e-05 ***
+## pc2           -2.820      0.380   -7.42  1.9e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.66 on 47 degrees of freedom
+## Multiple R-squared:  0.621,  Adjusted R-squared:  0.605 
+## F-statistic: 38.5 on 2 and 47 DF,  p-value: 1.26e-10
+</code></pre>
+
+<p>The regression shows that both components have a significnt impact on the suicide rate, and that they explain 62.1% of the variance.  </p>
+
+<h3>Cluster Analysis</h3>
+
+<p>Principle components analysis on its own can give some idea of clustering.  We can see this when we do a plot of the two components just calculated:</p>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAAB9VBMVEX9/v0AAAAAADEAADQAADkAAFwAAGUAKEgAOTkAOWUAOY8AV6QAWLUAZo8AZrUKAAAXAAAXKAAgDTknAAAnMQAnMTQnV4EnV6QnesUoKEgoOjEoZtoogf05AAA5ADk5AGU5OQA5OTk5OWU5OY85WLU5ZmU5ZrU5e3s5j485j5w5j7U5j9pFAABFMTRFMVxFMYFFVzRFV1xFV6RFeoFFeqRFesVFmqRFmsVFmuZIj9pXOihhMQBhMTRhMVxhVzRhV4FhejRhelxheoFheqRhmoFhmuZhuaRhucVhueZlAABlADllAGVlKChlOQBlOTllOWVlOY9lZgBlZjllZmVlZo9lZrVlj49lj7Vlj9pltbVltdpltf18VwB8VzR8V1x8eoF8mlx82KR82MV82OaBZiiPMQCPOQCPOTmPOWWPZjmPZmWPZo+PjzmPj2WPj4+Pj7WPnGWPtY+PtdqPtf2PvI+P27WP29qP2/2UejSUelyUeoGUmlyUuYGUueaU2MWU2OacOQCctWWthDStmlytmoGtuYGt2KSt2MWt2Oa1WDm1ZgC1Zjm1ZmW1jzm1j2W1j4+1tWW123u124+1/rW1/tq1/v27jznajznaj2Xaj4/atWXa24/a2/3a/rXa/tra/v39tWX9tY/922b924/9/rX9/tr9/v0vBB/MAAAAp3RSTlP/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AHTV0agAAAAJcEhZcwAACxIAAAsSAdLdfvwAAB0VSURBVHic7Z2LY9vWdYeLSeFUd9MeTmbu4cSKNy0zsjZT6pVbp7nJ2oys1saxI0cJorSpN1ebqqRZ5lBe1qQbRpmj6NSzzYF5zEIHEn/n7rn3gqRkvgEQAM/vS2xRL4jmp/vAufec+yUfsORLST8BkAwQzxSIZwrEMwXimQLxTIF4pkA8UyCeKRDPFIhnCsQzBeKZAvFM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" alt="plot of chunk unnamed-chunk-14"/> </p>
+
+<p>We can go further with the PCA, by throwing in suicide, and rotating the principle components.  As the original variables are not orthogonal, it makes sense to use the promax method.  We get the following solution:</p>
+
+<pre><code>##                PC1      PC2
+## gunown    0.794817  0.35438
+## relig     0.017765  0.86060
+## suicide   0.945580 -0.15398
+## obesity  -0.006282  0.85493
+## poverty  -0.096573  0.78601
+## densityT -0.970614  0.06987
+</code></pre>
+
+<p>The graph of the promax rotation shows how much the original variables have been compacted.  The x axis, rotated component 1, is about guns and suicide and low density.  The higher the score, the more inclined the state is to have a low population density, a high suicide rate, and high gun ownership.  Rotated component 2 relates to obesity, religion, and poverty.  And overall we get a pyramid structure, with mostly liberal, north Eastern states in the bottom left corner, sparsely populated gun-owning states in the bottom-right hand corner, and the apex of the pyramid being the South-Eastern states, with Mississippi at the very top.</p>
+
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfgAAAH4CAMAAACR9g9NAAACuFBMVEX9/v0AAAAAADEAADQAADkAAEgAAFwAAGUAFygAIDEAIkIAMTkAMY8AOTkAOWUAOWYAOY8AOZwAV6QAWGYAWLUAZo8AZrUNAAANOZwQHE4QRW8XAAAXAFcXOZwXZtoXaI0cAAAgOXsgWLUheqknAAAnHC0nMQAnMTQnV4EnV6QnesUnhOYoAAAoFw0oKHsoOTEoOTkoOVcoj9oxAAAxj7syFAA5AAA5ABc5ADk5AGU5MSA5OQA5OTk5OWU5OXs5OY85SEg5SI85WGY5Zlc5ZmU5ZrU5e3s5j485j5w5j7U5j7s5j9o5nP1FAABFMTRFMVxFMYFFVzRFV1xFV6RFeoFFeqRFesVFmqRFmsVFmuZGFABISDlIZrVItf1RvP1UaDRXAGVYPRVhMQBhMVxhPTRhV4FhejRhelxhem9heoFheqRhmoFhmuZhnoFhuaRhueZlAABlADllAGVlKABlOQBlOTllOWVlOY9lSShlZgBlZjllZmVlZo9lZrVlgWVlj49lj7Vlj9plnI9ltbVltdpltf1mKDl7OSB7OWV8VwB8VzR8V058V1x8ejR8eoF8mlx82KR82MV82OaBKA2BZgCBjzmPKCiPOQCPOTmPOUiPOWWPZgCPZhePZjmPZmWPZo+PjzmPj2WPj4+Pj7WPnGWPtY+PtdqPtf2P27WP29qP2/2UaB2UejSUelyUeoGUmlyUuYGUueaU2MWU2OacOQCcOQ2cORecZjmcjyitbiWtmlytmoGtuYGt2KSt2MWt2Oa1SCi1WAC1WCC1ZgC1Zjm1ZmW1jzm1j2W1j4+1tUi1tWW123u124+1/rW1/tq1/v27UQ3aZhfaeyDajznaj2Xaj4/atWXa24/a2/3a/rXa/tra/v39nDn9tUj9tVf9tWX9tY/9vFH923v924/929r9/rX9/tr9/v2TFHlfAAAA6HRSTlP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8Asi2gugAAAAlwSFlzAAALEgAACxIB0t1+/AAAIABJREFUeJztnYtjW9ddx3dnU/NKCYEZBmO8zErEY8DAtMQjjJBl4bZsWbYy8WYhlDKYPLPWNJmXmuYCNWO04eFiHp6bhabCBrbyFHIEyEo3E0ewqyZZPDgDId1/g/M7D13Jlux7da90H7/fZ1Mt2/LRzf3qnPM75/wer3IIlLwq6gsgooGERwoJjxQSHikkPFJIeKSQ8Egh4ZFCwiOFhEcKCY8UEh4pJDxSSHikkPBIIeGRQsIjhYRHCgmPFBIeKSQ8Ukh4pJDwSCHhkULCI4WERwoJjxQSHikkPFJIeKSQ8Egh4ZFCwiOFhEcKCY8UEh4pJDxSSHikkPBIIeGRQsIjhYRHCgmPFBIeKSQ8Ukh4pJDwSCHhkULCI4WERwoJjxQSHikkPFJIeKSQ8Egh4ZFCwiOFhEdKEOENIs4MUPgAf0sMGhIeKSQ8Ukh4pJDwSCHhkULCI4WERwoJjxQSHikk/D6wsarTXLSY2fqBWSqV1DP3ZxFcWTBI+H1gU5ZTf4wLz4zRvHhkCsZITjwza+cMCx4kvI+mEwI7MefUVri0G/nmHXiwzELu2ifEM9M268fhQcL7aDohMLNy8zLjwtcnDQseLFOcMLLimVnLN2Zf5o9bJLz3phMCH+MvvMBEj2/MwYOZC7l19cy2eI+3qMf7ajohMLMxU+3o8W3PakdG8/Ag4X00nQZqeflIICR8EEj4PpomIoWERwoJjxQSHikkPFJIeKSQ8Egh4ZFCwiOFhEcKCY8UEh4pJDxSSHikkPBIIeGRQsIjhYRHCgmPFBIeKSQ8Ukh4pJDwSCHhkULCI4WERwoJjxQSHimBha9PGqN5x2nMVH02TURKUOGbixZ/mCR80ggqvBS8PN4mvMdU+ESkhNHjOfaBB6jHJ4rAc3xjWqQBscdI+ERBVj1SSHikkPBIIeGRQsIjBanwtuU+Z6ZTKpUSmKMwEIiFr0+O5mv5+jwzIR11wbQNw6odMSz42keTOpl5QkAs/Ea+flwKD+moCyb0fVtkIPfY++v3i9yGFbGDUSolS3m8wjeXqo05KTykoy5A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" alt="plot of chunk unnamed-chunk-16"/> </p>
+
+<p>As far as cluster analysis is concerned, we&#39;ll create three clusters, using the k-means procedure.  Bear in mind that with k-means there is a random element - in this example the seed in R was set to 100.  State membership of each cluster is as follows:</p>
+
+<h4>Cluster 1</h4>
+
+<pre><code>##  [1] Alabama        Arkansas       Georgia        Indiana       
+##  [5] Kentucky       Louisiana      Michigan       Mississippi   
+##  [9] Missouri       North Carolina Oklahoma       South Carolina
+## [13] Tennessee      Texas          West Virginia 
+## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
+</code></pre>
+
+<h4>Cluster 2</h4>
+
+<pre><code>##  [1] California    Connecticut   Delaware      Florida       Hawaii       
+##  [6] Illinois      Maryland      Massachusetts Minnesota     New Hampshire
+## [11] New Jersey    New York      Ohio          Pennsylvania  Rhode Island 
+## [16] Vermont       Virginia      Washington    Wisconsin    
+## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
+</code></pre>
+
+<h4>Cluster 3</h4>
+
+<pre><code>##  [1] Alaska       Arizona      Colorado     Idaho        Iowa        
+##  [6] Kansas       Maine        Montana      Nebraska     Nevada      
+## [11] New Mexico   North Dakota Oregon       South Dakota Utah        
+## [16] Wyoming     
+## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
+</code></pre>
+
+<p>We can look at the mean differences of these three clusters, around the six measures:</p>
+
+<pre><code>##   cluster gunown
+## 1       1  45.02
+## 2       2  25.54
+## 3       3  44.99
+</code></pre>
+
+<pre><code>##   cluster relig
+## 1       1 48.81
+## 2       2 33.33
+## 3       3 38.38
+</code></pre>
+
+<pre><code>##   cluster suicide
+## 1       1   14.27
+## 2       2   11.43
+## 3       3   18.66
+</code></pre>
+
+<pre><code>##   cluster obesity
+## 1       1   32.19
+## 2       2   26.85
+## 3       3   27.65
+</code></pre>
+
+<pre><code>##   cluster poverty
+## 1       1   17.09
+## 2       2   12.31
+## 3       3   13.42
+</code></pre>
+
+<pre><code>##   cluster density
+## 1       1  118.11
+## 2       2  397.21
+## 3       3   26.84
+</code></pre>
+
+<p>I&#39;m not sure how useful that cluster analysis is, aside from telling us the obvious.  Cluster 1 is a more conservative group of states, who with the exception of Michigan, tend to vote Republican.  The members of cluster 2 all voted Democrat in the 2012 Presidential election, thought it included the swing states of Ohio, Virginia, and Florida.  Cluster 3 are low density states, which are not necessarily conservative.</p>
+
+<p>We can see that mean gunownership in cluster 2 is substantially below that of clusters 1 and 3, and that cluster 2 is the least religious grouping, and also has the lowest suicide rate. </p>
+
+<h3>Summary</h3>
+
+<p>This was, in essence, a fun exercise.  The data was very limited, and the variables used were somewhat arbitrary.  Still, there were some interesting results.  Suicide, gun ownership, and population density have a strong, mutual association.  People living in areas with a low population density are more likely to own firearms, and they are more likely to commit suicide.  This may be because there is an absence of support networks; alternatively people commiting suicice may be attracted to sparsely populated areas&hellip; or perhaps living an isolated existence has a detrimental psychiatric impact.  However we cannot necessarily use this data to blame gun ownership on suicide.  The US suicide rate is not abnormally high, compared with other developed nations.  At 12.5 in 2011, it is almost the same as the OECD average, at 12.4.  We can compare this with the figures for the UK and Japan, two countries that have stringent laws against firearm ownership.  The UK&#39;s suicide rate in 2011 was 6.7, Japan&#39;s 20.9 - take your pick for the appropriate comparison.  </p>
+
+<p>Another interesting observation was the relationship between religiousness, poverty, and obesity.  It would seem that there is a relationship between states having high obesity rates and those having high rates of people claiming to be very religious, even when poverty is allowed for.  One possible explaination is agency - people who have a strong belief in God may believe that they are not in full control of their lives, and this might extend to their eating habits.  </p>
+
+<p>A factor analysis suggested two components, one relating to guns, suicide, and population density, the other to religiousness, poverty, and obesity.  Of course the data used is very general, and may reflect some of my own prejudices.  However it is possible that they give some picture of the sociopolitical dimensions that underlie American life and culture.</p>
+
+<h3>Links</h3>
+
+<p>Suicide: <a href="http://www.cdc.gov/mmwr/preview/mmwrhtml/mm6345a10.htm">http://www.cdc.gov/mmwr/preview/mmwrhtml/mm6345a10.htm</a></p>
+
+<p>Obesity: <a href="http://stateofobesity.org/adult-obesity/">http://stateofobesity.org/adult-obesity/</a></p>
+
+<p>Gun ownership: <a href="http://www.schs.state.nc.us/SCHS/brfss/2001/us/firearm3.html">http://www.schs.state.nc.us/SCHS/brfss/2001/us/firearm3.html</a></p>
+
+<p>Poverty: <a href="https://www.census.gov/hhes/www/poverty/data/incpovhlth/2013/tables.html">https://www.census.gov/hhes/www/poverty/data/incpovhlth/2013/tables.html</a></p>
+
+<p>Religiousness: <a href="http://www.gallup.com/poll/160415/mississippi-maintains-hold-religious-state.aspx">http://www.gallup.com/poll/160415/mississippi-maintains-hold-religious-state.aspx</a></p>
+
+<p>Population density: <a href="http://www.census.gov/compendia/statab/2012/tables/12s0014.pdf">http://www.census.gov/compendia/statab/2012/tables/12s0014.pdf</a></p>
+
+</body>
+
+</html>

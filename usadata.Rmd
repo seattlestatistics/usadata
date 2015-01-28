@@ -1,0 +1,226 @@
+---
+title: "Understanding America: a light-hearted analysis"
+author: James Dunlop
+output: html_document
+---
+### Introduction
+
+This is a light-hearted statistical analysis of America.  I say light-hearted, because I am not going to defend or justify my approach, or worry that my data or statistical procedures are inadequate or amateurish.  I just want to have fun.
+
+My focus is the fifty American states, and how their metrics on six measures relate to each other.  These metrics are as follows:
+
+* Gun ownership (percentage, 2001)
+* Religiousness (percent regarding themselves as strongly religious, 2013)
+* Suicide rate (per 100,000, 2012)
+* Obesity rate (percentage, 2013)
+* Poverty rate (percentage, 2011-2013)
+* Density (people per square mile, 2010)
+
+Some of this data might be suspect or dated.  Gunownership comes from 2001 figures, elicited by  the Behavioral Risk Factor Surveillance System (BRFSS).  The figure is based on interviews, so it is possible that people might not have been telling the truth.  The religiousness figures came from Gallup and the suicide figures were reported by the CDC in 2014.  The obesity figures are for 2013, and they come from the BRFSS.  Poverty represents the percent of people in poverty, using a three year average from 2011 to 2013.  The source is the US Census Bureau. The US Census Bureau is also the source of the population density, for the year 2010. The religiousness survey comes from Gallup, and was published at the beginning of 2013.
+
+It is a limited data set, covering each of the 50 US states.  I wanted to see what characteristics of the 50 states correlated with each other, and I wanted to look at the inter-relationship of factors such as obesity and religious conviction.  The techniques I will be using include correlation, regression, and factor and cluster analysis.  
+
+### Descriptives and transformations
+
+Let's have a look at the raw data:
+```{r echo=FALSE}
+usa <- read.csv("c:/usa.csv")
+density <- usa$density
+summary(usa[,3:5])
+summary(usa[,6:8])
+```
+When we look at this data, we have to remember that each state is being given the same weighting, without regard for population.  Sparsely populated Wyoming is having the same impact on the means as California and New York.  
+
+We can see that in terms of population density, there are wide disparities:
+```{r echo=FALSE}
+hist(usa$density, breaks=10,col="lightblue",xlab="Population Density", 
+     main="Density of US States")
+
+```
+
+The distribution has considerable positive skew, so I am going to transform the data.  Remembering that I am doing this for fun, I am going to use a triple square root transformation.  This means taking the square root of the densities, taking the square root of that, and then taking the square root of that.  So Alabama's population density of 94.4 is tranformed to 1.77.  The square root of 94.4 is 9.72, the square root of 9.72 is 3.12 and the square root of 3.12 is 1.77.  After the transformation, we get the following roughly bell-shaped histogram for density:
+
+```{r echo=FALSE}
+usa$densityT <- sqrt(sqrt(sqrt(usa$density)))
+usa$density <- NULL
+hist(usa$densityT, breaks=10,col="lightblue",xlab="Population Density, transformed",
+     main="Histogram of transformed population density")
+
+```
+
+Further mention of density will refer to the tranformed figures:
+```{r echo=FALSE}
+summary(usa$densityT)
+```
+
+### Correlations
+
+One can check the correlations of the six variables, the table of Pearson correlations being followed by the p values:
+
+```{r include = FALSE}
+library(Hmisc)
+library(ggplot2)
+library(psych)
+library(GPArotation)
+```
+```{r echo=FALSE}
+C <- as.matrix(usa[,3:8])
+rcorr(C)
+```
+
+We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  On the other hand, gun ownership, population density, and suicide are corrlelated with one another - although density's correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.
+
+```{r echo=FALSE}
+ggplot(usa,aes(x=densityT,y=suicide)) + geom_point(size=3,shape=19,colour="red") + 
+geom_smooth(method=lm) + labs(x="Population Density",y="Suicides per 100,000") + 
+ggtitle("Suicide and Population Density")
+```
+
+There is an outler, which is Wyoming.  Although Wyoming is a sparsely populated state, the suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.
+
+An interesting relationship is that between being obese and being very religious.  From a spiritual point of view this is not what one would expect.  Good Christians are supposed to have moderate lifestyles, and to regard the body as being a temple.  However the scatter plot tells another story:
+```{r echo=FALSE}
+ggplot(usa,aes(x=relig,y=obesity)) + geom_point(size=3,shape=19,colour="red") + 
+geom_smooth(method=lm) + labs(x="Percent very religious",y="Percent Obese") + 
+ggtitle("Religiousness and Obesity")
+```
+
+There is one notable outlier, and that is Utah.  Utah is one of the most relgious states in the Union, with 56% of the population being very religious, and an obesity rate of 24.1%.  Utah has a large Mormon population, and it may be that the psychosocial make-up of the Mormon community is fundamentally different than that of more mainstream Christian communities.
+
+### Regression
+
+We then have to consider poverty.  It is possible that obesity is a surrogate for poverty, though the raw correlations suggest otherwise.  We can start by doing a linear regression, with obesity as the dependent variable and poverty as the predictor variable:
+```{r echo = FALSE}
+fit <- lm(obesity ~ poverty,data=usa)
+summary(fit)
+```
+
+This doesn't tell us much more from what we already know about the poverty-obesity relationship.  The correlation between the two is 0.47, so R-squared is 0.216.  So there is a relation, but it only accounts for 21.6% of the shared variance.  So let's do another regression, this time adding religiousness:
+
+```{r echo = FALSE}
+fit <- lm(obesity ~ poverty + relig,data=usa)
+summary(fit)
+```
+When we introduce obesity, R-squared shoots up to 0.39, so 39% of the shared variance is now explained.  Furthermore, the statistical significance of poverty is now p=0.155, compared to obesity's p<0.001.  This suggests that strong religious belief might have a relationship with obesity, and that poverty in itself may not play a central role.  
+
+One question we might want to ask is whether the variables so far mentioned have any influence on the suicide rate.  One problem of doing a regression might be collinearity - for example, gunownership and density have a very strong correlation.  So to deal with this issue, the five predictor variables that might predict suicide were reduced to their principle components.
+
+We first of all look at these components, suicide excluded, and set up a scree plot:
+```{r echo=FALSE}
+usaF <- princomp(usa[,c(3,4,6,7,8)], cor=TRUE)
+summary(usaF)
+plot(usaF,type="l",col="red",main="Scree Plot, suicide excluded")
+```
+
+It would seem that the optimum number of principle components is 2, so let's set them up:
+```{r echo=FALSE}
+usaF <- principal(usa[,c(3,4,6,7,8)], nfactors=2, rotate="none")
+usa$pc1 <- usaF$scores[,1]
+usa$pc2 <- usaF$scores[,2]
+usaF$loading[1:5,1:2]
+
+```
+We can now enter them into a regression equation, to look at their relationship to suicide:
+```{r echo=FALSE}
+suicideFit <- lm(suicide ~ pc1 + pc2,data=usa)
+summary(suicideFit)
+```
+The regression shows that both components have a significnt impact on the suicide rate, and that they explain 62.1% of the variance.  
+
+### Cluster Analysis
+
+Principle components analysis on its own can give some idea of clustering.  We can see this when we do a plot of the two components just calculated:
+
+```{r echo=FALSE}
+plot(usa$pc1,usa$pc2,pch=19,col="lightblue", xlab="PC1",ylab="PC2")
+text(usa$pc1,usa$pc2, labels=usa$state, cex= 0.7)
+```
+
+We can go further with the PCA, by throwing in suicide, and rotating the principle components.  As the original variables are not orthogonal, it makes sense to use the promax method.  We get the following solution:
+
+```{r echo=FALSE}
+
+usaF <- principal(usa[,c(3,4,5,6,7,8)], nfactors=2, rotate="promax")
+usa$pc1 <- usaF$scores[,1]
+usa$pc2 <- usaF$scores[,2]
+usaF$loadings[1:6,1:2]
+usa$pc1 <- usaF$scores[,1]
+usa$pc2 <- usaF$scores[,2]
+
+```
+
+The graph of the promax rotation shows how much the original variables have been compacted.  The x axis, rotated component 1, is about guns and suicide and low density.  The higher the score, the more inclined the state is to have a low population density, a high suicide rate, and high gun ownership.  Rotated component 2 relates to obesity, religion, and poverty.  And overall we get a pyramid structure, with mostly liberal, north Eastern states in the bottom left corner, sparsely populated gun-owning states in the bottom-right hand corner, and the apex of the pyramid being the South-Eastern states, with Mississippi at the very top.
+
+```{r echo=FALSE}
+plot(usa$pc1,usa$pc2,pch=19,col="lightblue", xlab="RC1: guns, suicide, and emptiness",
+ylab="RC2: poverty, religiousness, and obesity")
+text(usa$pc1,usa$pc2, labels=usa$state, cex= 0.7)
+```
+
+As far as cluster analysis is concerned, we'll create three clusters, using the k-means procedure.  Bear in mind that with k-means there is a random element - in this example the seed in R was set to 100.  State membership of each cluster is as follows:
+
+```{r echo=FALSE}
+j <- scale(usa[,c(3,4,5,6,7,8)])
+set.seed(1)
+usaC <- kmeans(j,3)
+
+usa$cluster <- as.factor(usaC$cluster)
+```
+
+
+
+#### Cluster 1
+
+```{r echo=FALSE}
+usa[which(usa$cluster=="1"),2]
+```
+
+#### Cluster 2
+
+```{r echo=FALSE}
+usa[which(usa$cluster=="2"),2]
+```
+
+#### Cluster 3
+
+```{r echo=FALSE}
+usa[which(usa$cluster=="3"),2]
+```
+
+
+We can look at the mean differences of these three clusters, around the six measures:
+
+```{r echo=FALSE}
+aggregate(gunown ~ cluster,mean,data=usa)
+aggregate(relig ~ cluster,mean,data=usa)
+aggregate(suicide ~ cluster,mean,data=usa)
+aggregate(obesity ~ cluster,mean,data=usa)
+aggregate(poverty ~ cluster,mean,data=usa)
+aggregate(density ~ cluster,mean,data=usa)
+```
+
+I'm not sure how useful that cluster analysis is, aside from telling us the obvious.  Cluster 1 is a more conservative group of states, who with the exception of Michigan, tend to vote Republican.  The members of cluster 2 all voted Democrat in the 2012 Presidential election, thought it included the swing states of Ohio, Virginia, and Florida.  Cluster 3 are low density states, which are not necessarily conservative.
+
+We can see that mean gunownership in cluster 2 is substantially below that of clusters 1 and 3, and that cluster 2 is the least religious grouping, and also has the lowest suicide rate. 
+
+### Summary
+
+This was, in essence, a fun exercise.  The data was very limited, and the variables used were somewhat arbitrary.  Still, there were some interesting results.  Suicide, gun ownership, and population density have a strong, mutual association.  People living in areas with a low population density are more likely to own firearms, and they are more likely to commit suicide.  This may be because there is an absence of support networks; alternatively people commiting suicice may be attracted to sparsely populated areas... or perhaps living an isolated existence has a detrimental psychiatric impact.  However we cannot necessarily use this data to blame gun ownership on suicide.  The US suicide rate is not abnormally high, compared with other developed nations.  At 12.5 in 2011, it is almost the same as the OECD average, at 12.4.  We can compare this with the figures for the UK and Japan, two countries that have stringent laws against firearm ownership.  The UK's suicide rate in 2011 was 6.7, Japan's 20.9 - take your pick for the appropriate comparison.  
+
+Another interesting observation was the relationship between religiousness, poverty, and obesity.  It would seem that there is a relationship between states having high obesity rates and those having high rates of people claiming to be very religious, even when poverty is allowed for.  One possible explaination is agency - people who have a strong belief in God may believe that they are not in full control of their lives, and this might extend to their eating habits.  
+
+A factor analysis suggested two components, one relating to guns, suicide, and population density, the other to religiousness, poverty, and obesity.  Of course the data used is very general, and may reflect some of my own prejudices.  However it is possible that they give some picture of the sociopolitical dimensions that underlie American life and culture.
+
+### Links
+
+Suicide: http://www.cdc.gov/mmwr/preview/mmwrhtml/mm6345a10.htm
+
+Obesity: http://stateofobesity.org/adult-obesity/
+
+Gun ownership: http://www.schs.state.nc.us/SCHS/brfss/2001/us/firearm3.html
+
+Poverty: https://www.census.gov/hhes/www/poverty/data/incpovhlth/2013/tables.html
+
+Religiousness: http://www.gallup.com/poll/160415/mississippi-maintains-hold-religious-state.aspx
+
+Population density: http://www.census.gov/compendia/statab/2012/tables/12s0014.pdf
