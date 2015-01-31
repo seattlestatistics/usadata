@@ -272,7 +272,8 @@ As far as cluster analysis is concerned, we'll create three clusters, using the 
 ```
 
 
-We can look at the mean differences of these three clusters, around the six measures:
+We can look at the mean differences of these three clusters, around the six measures (density and suicide untransformed):
+
 
 
 ```
@@ -342,3 +343,6 @@ Poverty: https://www.census.gov/hhes/www/poverty/data/incpovhlth/2013/tables.htm
 Religiousness: http://www.gallup.com/poll/160415/mississippi-maintains-hold-religious-state.aspx
 
 Population density: http://www.census.gov/compendia/statab/2012/tables/12s0014.pdf
+
+
+
