@@ -48,10 +48,26 @@ hist(usa$densityT, breaks=10,col="lightblue",xlab="Population Density, transform
 
 ```
 
-Further mention of density will refer to the tranformed figures:
+Here are the tranformed figures:
 ```{r echo=FALSE}
 summary(usa$densityT)
 ```
+
+Additionally, the distribution for suicide isn't exactly normal:
+
+```{r echo=FALSE}
+hist(usa$suicide, breaks=9,col="lightblue",xlab="Suicide rates", 
+     main="Suicide rates in the US States")
+```
+
+A log tranform was performed, which substantially improved things:  
+```{r echo=FALSE}
+usa$suicideT <- log(usa$suicide)
+hist(usa$suicideT, breaks=9,col="lightblue",xlab="Suicide, transformed",
+     main="Histogram of transformed suicide rates")
+```
+
+Further mention of density and suicide will refer to the transformed figures.
 
 ### Correlations
 
@@ -64,19 +80,25 @@ library(psych)
 library(GPArotation)
 ```
 ```{r echo=FALSE}
-C <- as.matrix(usa[,3:8])
+C <- as.matrix(usa[,c(3,4,6,7,8,9)])
 rcorr(C)
 ```
 
-We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  On the other hand, gun ownership, population density, and suicide are corrlelated with one another - although density's correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.
+We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  Also gun ownership, population density, and suicide are inter-corrlelated - although density's correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.
 
 ```{r echo=FALSE}
-ggplot(usa,aes(x=densityT,y=suicide)) + geom_point(size=3,shape=19,colour="red") + 
-geom_smooth(method=lm) + labs(x="Population Density",y="Suicides per 100,000") + 
+ggplot(usa,aes(x=densityT,y=suicideT)) + geom_point(size=3,shape=19,colour="red") + 
+geom_smooth(method=lm) + labs(x="Population Density, transformed",y="Suicides per 100,000, transformed") + 
 ggtitle("Suicide and Population Density")
 ```
 
-There is an outler, which is Wyoming.  Although Wyoming is a sparsely populated state, the suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.
+It is worth noting that there is an outlier, which is Wyoming.  Although Wyoming is a sparsely populated state, the untransformed suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.  The scatter plot just shown removes the impact of the outlier, through the log transform.  Here is the scatter plot if neither suicide nor density is transformed:
+
+```{r echo=FALSE}
+ggplot(usa,aes(x=density,y=suicide)) + geom_point(size=3,shape=19,colour="red") + 
+geom_smooth(method=lm) + labs(x="Population Density, untransformed",y="Suicides per 100,000, untransformed") + 
+ggtitle("Suicide and Population Density, untransformed")
+```
 
 An interesting relationship is that between being obese and being very religious.  From a spiritual point of view this is not what one would expect.  Good Christians are supposed to have moderate lifestyles, and to regard the body as being a temple.  However the scatter plot tells another story:
 ```{r echo=FALSE}
@@ -122,7 +144,7 @@ usaF$loading[1:5,1:2]
 ```
 We can now enter them into a regression equation, to look at their relationship to suicide:
 ```{r echo=FALSE}
-suicideFit <- lm(suicide ~ pc1 + pc2,data=usa)
+suicideFit <- lm(suicideT ~ pc1 + pc2,data=usa)
 summary(suicideFit)
 ```
 The regression shows that both components have a significnt impact on the suicide rate, and that they explain 62.1% of the variance.  
@@ -140,7 +162,7 @@ We can go further with the PCA, by throwing in suicide, and rotating the princip
 
 ```{r echo=FALSE}
 
-usaF <- principal(usa[,c(3,4,5,6,7,8)], nfactors=2, rotate="promax")
+usaF <- principal(usa[,c(3,4,6,7,8,9)], nfactors=2, rotate="promax")
 usa$pc1 <- usaF$scores[,1]
 usa$pc2 <- usaF$scores[,2]
 usaF$loadings[1:6,1:2]
@@ -160,7 +182,7 @@ text(usa$pc1,usa$pc2, labels=usa$state, cex= 0.7)
 As far as cluster analysis is concerned, we'll create three clusters, using the k-means procedure.  Bear in mind that with k-means there is a random element - in this example the seed in R was set to 100.  State membership of each cluster is as follows:
 
 ```{r echo=FALSE}
-j <- scale(usa[,c(3,4,5,6,7,8)])
+j <- scale(usa[,c(3,4,6,7,8,9)])
 set.seed(1)
 usaC <- kmeans(j,3)
 

@@ -52,12 +52,21 @@ The distribution has considerable positive skew, so I am going to transform the 
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
 
-Further mention of density will refer to the tranformed figures:
+Here are the tranformed figures:
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 ##    1.02    1.61    1.78    1.78    1.95    2.42
 ```
+
+Additionally, the distribution for suicide isn't exactly normal:
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
+
+A log tranform was performed, which substantially improved things:  
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
+Further mention of density and suicide will refer to the transformed figures.
 
 ### Correlations
 
@@ -66,35 +75,37 @@ One can check the correlations of the six variables, the table of Pearson correl
 
 
 ```
-##          gunown relig suicide obesity poverty densityT
-## gunown     1.00  0.45    0.66    0.52    0.22    -0.79
-## relig      0.45  1.00    0.07    0.60    0.55    -0.14
-## suicide    0.66  0.07    1.00   -0.01    0.07    -0.82
-## obesity    0.52  0.60   -0.01    1.00    0.47    -0.10
-## poverty    0.22  0.55    0.07    0.47    1.00    -0.05
-## densityT  -0.79 -0.14   -0.82   -0.10   -0.05     1.00
+##          gunown relig obesity poverty densityT suicideT
+## gunown     1.00  0.45    0.52    0.22    -0.79     0.71
+## relig      0.45  1.00    0.60    0.55    -0.14     0.13
+## obesity    0.52  0.60    1.00    0.47    -0.10     0.07
+## poverty    0.22  0.55    0.47    1.00    -0.05     0.13
+## densityT  -0.79 -0.14   -0.10   -0.05     1.00    -0.84
+## suicideT   0.71  0.13    0.07    0.13    -0.84     1.00
 ## 
 ## n= 50 
 ## 
 ## 
 ## P
-##          gunown relig  suicide obesity poverty densityT
-## gunown          0.0010 0.0000  0.0001  0.1318  0.0000  
-## relig    0.0010        0.6131  0.0000  0.0000  0.3172  
-## suicide  0.0000 0.6131         0.9525  0.6058  0.0000  
-## obesity  0.0001 0.0000 0.9525          0.0007  0.4716  
-## poverty  0.1318 0.0000 0.6058  0.0007          0.7150  
-## densityT 0.0000 0.3172 0.0000  0.4716  0.7150
+##          gunown relig  obesity poverty densityT suicideT
+## gunown          0.0010 0.0001  0.1318  0.0000   0.0000  
+## relig    0.0010        0.0000  0.0000  0.3172   0.3531  
+## obesity  0.0001 0.0000         0.0007  0.4716   0.6373  
+## poverty  0.1318 0.0000 0.0007          0.7150   0.3669  
+## densityT 0.0000 0.3172 0.4716  0.7150           0.0000  
+## suicideT 0.0000 0.3531 0.6373  0.3669  0.0000
 ```
 
-We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  On the other hand, gun ownership, population density, and suicide are corrlelated with one another - although density's correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.
+We notice that religiousness, obesity, and poverty are all correlated with each other.  So states with high poverty rates tend to have elevated levels of obesity and extreme religious faith.  Also gun ownership, population density, and suicide are inter-corrlelated - although density's correlations with suicide and gun ownership are negative.  In other words, the greater the population density, the lower the percentage of suicides and gun ownership.
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-There is an outler, which is Wyoming.  Although Wyoming is a sparsely populated state, the suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.
+It is worth noting that there is an outlier, which is Wyoming.  Although Wyoming is a sparsely populated state, the untransformed suicide rate at 29.77 per hundred thousand is substantially higher than what we would expect.  The scatter plot just shown removes the impact of the outlier, through the log transform.  Here is the scatter plot if neither suicide nor density is transformed:
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
 
 An interesting relationship is that between being obese and being very religious.  From a spiritual point of view this is not what one would expect.  Good Christians are supposed to have moderate lifestyles, and to regard the body as being a temple.  However the scatter plot tells another story:
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
 
 There is one notable outlier, and that is Utah.  Utah is one of the most relgious states in the Union, with 56% of the population being very religious, and an obesity rate of 24.1%.  Utah has a large Mormon population, and it may be that the psychosocial make-up of the Mormon community is fundamentally different than that of more mainstream Christian communities.
 
@@ -161,7 +172,7 @@ We first of all look at these components, suicide excluded, and set up a scree p
 ## Cumulative Proportion  0.5208 0.7936 0.9047 0.98145 1.00000
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14.png) 
 
 It would seem that the optimum number of principle components is 2, so let's set them up:
 
@@ -178,23 +189,23 @@ We can now enter them into a regression equation, to look at their relationship 
 ```
 ## 
 ## Call:
-## lm(formula = suicide ~ pc1 + pc2, data = usa)
+## lm(formula = suicideT ~ pc1 + pc2, data = usa)
 ## 
 ## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -4.696 -1.314 -0.233  1.420  8.096 
+##     Min      1Q  Median      3Q     Max 
+## -0.2847 -0.1117  0.0041  0.0845  0.3695 
 ## 
 ## Coefficients:
 ##             Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)   14.596      0.376   38.82  < 2e-16 ***
-## pc1            1.776      0.380    4.68  2.5e-05 ***
-## pc2           -2.820      0.380   -7.42  1.9e-09 ***
+## (Intercept)   2.6423     0.0234  112.73  < 2e-16 ***
+## pc1           0.1381     0.0237    5.83  4.8e-07 ***
+## pc2          -0.1796     0.0237   -7.58  1.1e-09 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 2.66 on 47 degrees of freedom
-## Multiple R-squared:  0.621,	Adjusted R-squared:  0.605 
-## F-statistic: 38.5 on 2 and 47 DF,  p-value: 1.26e-10
+## Residual standard error: 0.166 on 47 degrees of freedom
+## Multiple R-squared:  0.661,	Adjusted R-squared:  0.646 
+## F-statistic: 45.8 on 2 and 47 DF,  p-value: 9.31e-12
 ```
 The regression shows that both components have a significnt impact on the suicide rate, and that they explain 62.1% of the variance.  
 
@@ -202,24 +213,24 @@ The regression shows that both components have a significnt impact on the suicid
 
 Principle components analysis on its own can give some idea of clustering.  We can see this when we do a plot of the two components just calculated:
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17.png) 
 
 We can go further with the PCA, by throwing in suicide, and rotating the principle components.  As the original variables are not orthogonal, it makes sense to use the promax method.  We get the following solution:
 
 
 ```
 ##                PC1      PC2
-## gunown    0.794817  0.35438
-## relig     0.017765  0.86060
-## suicide   0.945580 -0.15398
-## obesity  -0.006282  0.85493
-## poverty  -0.096573  0.78601
-## densityT -0.970614  0.06987
+## gunown    0.805446  0.32172
+## relig     0.017178  0.86076
+## obesity   0.003175  0.84839
+## poverty  -0.099560  0.79653
+## densityT -0.982963  0.10718
+## suicideT  0.950258 -0.09987
 ```
 
 The graph of the promax rotation shows how much the original variables have been compacted.  The x axis, rotated component 1, is about guns and suicide and low density.  The higher the score, the more inclined the state is to have a low population density, a high suicide rate, and high gun ownership.  Rotated component 2 relates to obesity, religion, and poverty.  And overall we get a pyramid structure, with mostly liberal, north Eastern states in the bottom left corner, sparsely populated gun-owning states in the bottom-right hand corner, and the apex of the pyramid being the South-Eastern states, with Mississippi at the very top.
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19.png) 
 
 As far as cluster analysis is concerned, we'll create three clusters, using the k-means procedure.  Bear in mind that with k-means there is a random element - in this example the seed in R was set to 100.  State membership of each cluster is as follows:
 
@@ -231,10 +242,11 @@ As far as cluster analysis is concerned, we'll create three clusters, using the 
 
 
 ```
-##  [1] Alabama        Arkansas       Georgia        Indiana       
-##  [5] Kentucky       Louisiana      Michigan       Mississippi   
-##  [9] Missouri       North Carolina Oklahoma       South Carolina
-## [13] Tennessee      Texas          West Virginia 
+##  [1] Alabama        Arizona        Arkansas       Georgia       
+##  [5] Indiana        Kentucky       Louisiana      Michigan      
+##  [9] Mississippi    Missouri       New Mexico     North Carolina
+## [13] Oklahoma       South Carolina Tennessee      Texas         
+## [17] West Virginia 
 ## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
 ```
 
@@ -243,9 +255,8 @@ As far as cluster analysis is concerned, we'll create three clusters, using the 
 
 ```
 ##  [1] California    Connecticut   Delaware      Florida       Hawaii       
-##  [6] Illinois      Maryland      Massachusetts Minnesota     New Hampshire
-## [11] New Jersey    New York      Ohio          Pennsylvania  Rhode Island 
-## [16] Vermont       Virginia      Washington    Wisconsin    
+##  [6] Illinois      Maryland      Massachusetts New Hampshire New Jersey   
+## [11] New York      Ohio          Pennsylvania  Rhode Island  Virginia     
 ## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
 ```
 
@@ -253,10 +264,10 @@ As far as cluster analysis is concerned, we'll create three clusters, using the 
 
 
 ```
-##  [1] Alaska       Arizona      Colorado     Idaho        Iowa        
-##  [6] Kansas       Maine        Montana      Nebraska     Nevada      
-## [11] New Mexico   North Dakota Oregon       South Dakota Utah        
-## [16] Wyoming     
+##  [1] Alaska       Colorado     Idaho        Iowa         Kansas      
+##  [6] Maine        Minnesota    Montana      Nebraska     Nevada      
+## [11] North Dakota Oregon       South Dakota Utah         Vermont     
+## [16] Washington   Wisconsin    Wyoming     
 ## 50 Levels: Alabama Alaska Arizona Arkansas California ... Wyoming
 ```
 
@@ -266,44 +277,44 @@ We can look at the mean differences of these three clusters, around the six meas
 
 ```
 ##   cluster gunown
-## 1       1  45.02
-## 2       2  25.54
-## 3       3  44.99
+## 1       1  43.60
+## 2       2  21.61
+## 3       3  45.29
 ```
 
 ```
 ##   cluster relig
-## 1       1 48.81
-## 2       2 33.33
-## 3       3 38.38
+## 1       1 47.76
+## 2       2 33.89
+## 3       3 36.62
 ```
 
 ```
 ##   cluster suicide
-## 1       1   14.27
-## 2       2   11.43
-## 3       3   18.66
+## 1       1   14.86
+## 2       2   11.02
+## 3       3   17.32
 ```
 
 ```
 ##   cluster obesity
-## 1       1   32.19
-## 2       2   26.85
-## 3       3   27.65
+## 1       1   31.54
+## 2       2   26.87
+## 3       3   27.58
 ```
 
 ```
 ##   cluster poverty
-## 1       1   17.09
-## 2       2   12.31
-## 3       3   13.42
+## 1       1   17.44
+## 2       2   12.59
+## 3       3   12.19
 ```
 
 ```
 ##   cluster density
-## 1       1  118.11
-## 2       2  397.21
-## 3       3   26.84
+## 1       1  108.53
+## 2       2  480.42
+## 3       3   38.71
 ```
 
 I'm not sure how useful that cluster analysis is, aside from telling us the obvious.  Cluster 1 is a more conservative group of states, who with the exception of Michigan, tend to vote Republican.  The members of cluster 2 all voted Democrat in the 2012 Presidential election, thought it included the swing states of Ohio, Virginia, and Florida.  Cluster 3 are low density states, which are not necessarily conservative.
